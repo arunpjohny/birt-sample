@@ -1,0 +1,7 @@
+target/**
+WebContent/WEB-INF/classes/**
+WebContent/WEB-INF/logs/**
+WebContent/logs/**
+*.class
+WebContent/.#webclasspath
+*.orig
