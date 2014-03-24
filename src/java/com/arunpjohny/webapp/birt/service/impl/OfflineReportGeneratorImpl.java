@@ -123,9 +123,7 @@ public class OfflineReportGeneratorImpl implements OfflineReportGenerator,
 
 			IRunTask runTask = engine.createRunTask(design);
 
-			runTask.getAppContext()
-					.put("org.eclipse.birt.report.data.oda.subjdbc.SubOdaJdbcDriver",
-							conn);
+			runTask.getAppContext().put("OdaJDBCDriverPassInConnection", conn);
 
 			if (context.getParams() != null) {
 				OfflineReportInfo offlineReportInfo = reportInfoMap
@@ -360,24 +358,33 @@ public class OfflineReportGeneratorImpl implements OfflineReportGenerator,
 
 	private IReportEngine createReportEngine() throws BirtException,
 			IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Creating Report engine.");
-		}
+		if (engine == null) {
+			synchronized (this) {
+				if (engine == null) {
+					if (log.isDebugEnabled()) {
+						log.debug("Creating Report engine.");
+					}
 
-		IReportEngine engine;
-		EngineConfig config = new EngineConfig();
-		HashMap<Object, Object> appContext = new HashMap<Object, Object>();
-		appContext.put(EngineConstants.APPCONTEXT_CLASSLOADER_KEY, this
-				.getClass().getClassLoader());
-		config.setAppContext(appContext);
-		config.setEngineHome(engineHome.getFile().getAbsolutePath());
-		config.setLogConfig(reportLog.getFile().getAbsolutePath(), Level.FINEST);
-		IReportEngineFactory factory = (IReportEngineFactory) Platform
-				.createFactoryObject(IReportEngineFactory.EXTENSION_REPORT_ENGINE_FACTORY);
-		engine = factory.createReportEngine(config);
-		engine.changeLogLevel(Level.SEVERE);
-		if (log.isDebugEnabled()) {
-			log.debug("Report engine created.");
+					EngineConfig config = new EngineConfig();
+					HashMap<Object, Object> appContext = new HashMap<Object, Object>();
+					appContext.put(EngineConstants.APPCONTEXT_CLASSLOADER_KEY,
+							this.getClass().getClassLoader());
+					config.setAppContext(appContext);
+					config.setEngineHome(engineHome.getFile().getAbsolutePath());
+					config.setLogConfig(reportLog.getFile().getAbsolutePath(),
+							Level.FINEST);
+
+					Platform.startup();
+
+					IReportEngineFactory factory = (IReportEngineFactory) Platform
+							.createFactoryObject(IReportEngineFactory.EXTENSION_REPORT_ENGINE_FACTORY);
+					engine = factory.createReportEngine(config);
+					engine.changeLogLevel(Level.SEVERE);
+					if (log.isDebugEnabled()) {
+						log.debug("Report engine created.");
+					}
+				}
+			}
 		}
 		return engine;
 	}
