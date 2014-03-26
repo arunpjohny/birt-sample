@@ -5,3 +5,5 @@ WebContent/logs/**
 *.class
 WebContent/.#webclasspath
 *.orig
+/build
+/target
